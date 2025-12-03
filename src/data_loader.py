@@ -9,12 +9,15 @@ def load_documents(data_dir: str = "data/holistic") -> List[dict]:
         for file in files:
             if file.endswith('.txt'):
                 filepath = os.path.join(root, file)
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    documents.append({
-                        'content': content,
-                        'source': file,
-                        'id': file.replace('.txt', '')
-                    })
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        documents.append({
+                            'content': content,
+                            'source': file,
+                            'id': file.replace('.txt', '').replace(' ', '_')
+                        })
+                except Exception as e:
+                    print(f"Error reading {file}: {e}")
     
     return documents
