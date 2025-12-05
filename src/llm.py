@@ -1,10 +1,7 @@
 from groq import Groq
-import os
-from dotenv import load_dotenv
+from src.config import GROQ_API_KEY
 
-load_dotenv()
-
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+client = Groq(api_key=GROQ_API_KEY)
 
 def generate_response(query: str, context: str, user_profile: dict = None) -> str:
     """

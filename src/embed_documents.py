@@ -1,22 +1,19 @@
 from pinecone import Pinecone, ServerlessSpec
 import cohere
-import os
-from dotenv import load_dotenv
+from src.config import PINECONE_API_KEY, COHERE_API_KEY
 from data_loader import load_documents
 import time
-
-load_dotenv()
 
 print("🚀 Starting Pinecone embedding process...")
 
 # Initialize Pinecone
 print("Initializing Pinecone...")
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+pc = Pinecone(api_key=PINECONE_API_KEY)
 print("✅ Pinecone initialized")
 
 # Initialize Cohere
 print("Initializing Cohere...")
-co = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
+co = cohere.Client(api_key=COHERE_API_KEY)
 print("✅ Cohere initialized")
 
 # Load documents

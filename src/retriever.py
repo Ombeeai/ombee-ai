@@ -1,16 +1,13 @@
 from pinecone import Pinecone
 import cohere
-import os
-from dotenv import load_dotenv
+from src.config import PINECONE_API_KEY, COHERE_API_KEY
 from typing import Tuple, List
-
-load_dotenv()
 
 print("🔧 Initializing Pinecone retriever...")
 
 # Initialize Pinecone
 try:
-    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    pc = Pinecone(api_key=PINECONE_API_KEY)
     index = pc.Index("ombee-holistic")
     print("✅ Pinecone connected")
 except Exception as e:
@@ -19,7 +16,7 @@ except Exception as e:
 
 # Initialize Cohere
 try:
-    co = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
+    co = cohere.Client(api_key=COHERE_API_KEY)
     print("✅ Cohere connected")
 except Exception as e:
     print(f"❌ Cohere initialization failed: {e}")
