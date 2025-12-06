@@ -5,6 +5,9 @@ from src.retriever import retrieve_context
 from src.llm import generate_response
 from src.demo_responses import get_demo_response, get_coming_soon_message
 from src.theme import apply_theme, get_base64_image
+from src.phoenix_monitoring import get_monitor
+
+monitor = get_monitor()
 
 # Page config with Ombee branding
 st.set_page_config(
@@ -129,6 +132,9 @@ query_to_process = st.session_state['current_query']
 
 # Only show response if there's a query to process
 if st.session_state['process_query'] and query_to_process:
+    # Track start time for latency calculation
+    start_time = time.time()
+    
     # Create columns for response area
     response_col1, response_col2 = st.columns([3, 1])
 
@@ -136,7 +142,7 @@ if st.session_state['process_query'] and query_to_process:
         # Show user message
         st.markdown(f"**You asked:** {query_to_process}")
         st.markdown("")
-        
+
         # Routing
         with st.spinner("🔍 Analyzing your question..."):
             time.sleep(0.3)
@@ -147,6 +153,7 @@ if st.session_state['process_query'] and query_to_process:
         
         st.info(f"{domain_icons.get(domain, '🔍')} **Routed to {domain.upper()} domain** (confidence: {confidence:.0%})")
         
+        context = ""
         # Generate response
         with st.spinner("💭 Generating response..."):
             time.sleep(0.5)
@@ -177,6 +184,26 @@ if st.session_state['process_query'] and query_to_process:
                 response_text = get_coming_soon_message(domain, query_to_process)
                 sources = []
                 status = 'coming-soon'
+        
+        # Calculate latency
+        end_time = time.time()
+        latency = end_time - start_time
+
+        # Log to Phoenix after response is generated
+        if monitor and monitor.tracer:
+            try:
+                monitor.log_query(
+                    query=query_to_process,
+                    domain=domain,
+                    confidence=confidence,
+                    response=response_text,
+                    sources=sources,
+                    latency=latency,
+                    context=context,
+                    status=status
+                )
+            except Exception as e:
+                st.warning(f"Failed to log to Phoenix: {e}")
         
         # Display response in styled box with proper line breaks
         response_html = response_text.replace('\n', '<br>')

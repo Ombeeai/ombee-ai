@@ -67,7 +67,6 @@ def retrieve_context(query: str, n_results: int = 5) -> Tuple[str, List[str]]:
             
             contexts.append(text)
             sources.append(f"{source} (score: {score:.2f})")
-            print(f"    • {source}: {score:.2f}")
         
         if contexts:
             context = "\n\n---\n\n".join(contexts)
