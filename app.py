@@ -6,7 +6,7 @@ from src.retriever import retrieve_context
 from src.llm import generate_response
 from src.demo_responses import get_demo_response, get_coming_soon_message
 from src.theme import apply_theme, get_base64_image
-from src.phoenix_monitoring import get_monitor
+from src.monitoring import get_monitor
 
 monitor = get_monitor()
 
