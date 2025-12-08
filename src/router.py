@@ -16,6 +16,7 @@ def detect_domain(query: str) -> Tuple[str, float]:
             'nutrition': 3, 'diet': 2.5, 'exercise': 2.5, 'sleep': 2.5,
             'stress': 2, 'mental health': 3, 'blood pressure': 3,
             'diabetes': 3, 'chronic': 2, 'healthy eating': 3,
+            'fasting': 3, 'intermittent fasting': 3,
             
             # Medium weight - somewhat specific
             'health': 1.5, 'food': 1.5, 'eat': 1, 'meal': 1.5,
@@ -63,7 +64,7 @@ def detect_domain(query: str) -> Tuple[str, float]:
             'blood pressure', 'mental health', 'healthy eating',
             'lose weight', 'gain weight', 'feel better',
             'meditation technique', 'stress management',
-            'sleep better', 'improve sleep'
+            'sleep better', 'improve sleep', 'intermittent fasting', 'fasting'
         },
         'financial' : {
             'how much did i spend', 'spent on', 'my budget',
@@ -114,7 +115,7 @@ def detect_domain(query: str) -> Tuple[str, float]:
 
     # If no matches then default to holistic
     if all(score == 0 for score in scores.values()):
-        return 'holisitc', 0.70
+        return 'holistic', 0.70
     
     best_domain = max(scores,key=scores.get)
     max_score = scores[best_domain]

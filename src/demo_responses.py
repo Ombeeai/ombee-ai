@@ -1,5 +1,5 @@
 DEMO_RESPONSES = {
-    "how much did i spend on restaurants last month": {
+    "how much did i spend on restaurants last month?": {
         "domain": "financial",
         "response": """Based on your linked Ombee Finance account:
 
@@ -19,13 +19,14 @@ DEMO_RESPONSES = {
             "status": "demo"
         },
         
-        "what's my current phone plan": {
-            "domain": "telecom",
-            "response": """Based on your Ombee Wireless account:
+    "what's my current phone plan?": {
+        "domain": "telecom",
+        "response": """Based on your Ombee Wireless account:
 
-    **Current Plan: Unlimited Plus**
-    - Monthly base cost: $80.00
-    - Data: Unlimited 5G nationwide
+    **Current Plan: Max**
+    - Monthly base cost: $50.00
+    - Data: Ultra-Fast Unlimited 5G
+    - Talk & Text: Unlimited nationwide
     - Hotspot: 30GB high-speed
     - International: Talk & Text to Mexico/Canada included
 
@@ -34,16 +35,16 @@ DEMO_RESPONSES = {
     - Monthly payment: $33.33
     - Payments remaining: 16 months
 
-    **Total Monthly Bill: ~$127.43** (including taxes & fees)
+    **Total Monthly Bill: ~$97.43** (including taxes & fees)
 
     *[Demo data - Ombee Wireless integration coming in Phase 2]*""",
             "sources": ["Ombee Wireless - Demo Data"],
             "status": "demo"
         },
         
-        "what's my data usage this month": {
-            "domain": "telecom",
-            "response": """I've identified your question about mobile data usage.
+    "what's my data usage this month?": {
+        "domain": "telecom",
+        "response": """I've identified your question about mobile data usage.
 
     Our **Ombee Wireless AI agent** is being integrated and will provide:
     - Real-time data usage tracking
@@ -51,7 +52,7 @@ DEMO_RESPONSES = {
     - Data optimization tips
     - Plan upgrade suggestions if needed
 
-    **Expected launch:** Phase 2 (Q1 2025)
+    **Expected launch:** Phase 2 (Q2 2026)
 
     For now, I'm here to help with holistic wellness topics! Ask me about nutrition, meditation, exercise, or managing health conditions like high blood pressure.""",
             "sources": [],
@@ -77,7 +78,7 @@ def get_coming_soon_message(domain: str, query: str) -> str:
         - Savings goal tracking
         - Integration with your Ombee Finance account
 
-        **Expected launch:** Phase 2 (Q1 2025)
+        **Expected launch:** Phase 2 (Q2 2026)
 
         In the meantime, I'm fully operational for holistic health and wellness questions! Try asking about nutrition, meditation, exercise, sleep, stress management, or managing chronic health conditions.""",
                 
@@ -90,7 +91,7 @@ def get_coming_soon_message(domain: str, query: str) -> str:
         - Plan recommendations and upgrades
         - Network troubleshooting support
 
-        **Expected launch:** Phase 2 (Q1 2025)
+        **Expected launch:** Phase 2 (Q2 2026)
 
         For now, I'm here to help with holistic wellness topics! Ask me about healthy eating, stress management, sleep optimization, exercise guidance, or nutrition for specific health conditions."""
     }

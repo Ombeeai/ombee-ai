@@ -15,26 +15,34 @@ THEME_CSS = """
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ------ GLOBAL APP BACKGROUND ------ */
-.stApp {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
-    color: #1a1a1a !important;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/* ------ MAIN CONTAINER BACKGROUND ------ */
+.main .block-container {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #2d2d2d 50%, #1a1a1a 75%, #0a0a0a 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
-/* ------ HEADER SECTION WITH GRADIENT ------ */
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ------ HEADER SECTION WITH GLOWING EFFECT ------ */
 .main-header {
     text-align: center;
     padding: 2.5rem 0 0.8rem 0;
-    color: #1a1a1a;
+    color: #ECC719;
     font-weight: 800;
-    font-size: 3rem;
-    background: linear-gradient(135deg, #ECC719 0%, #FFD700 100%);
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #ECC719 0%, #FFD700 50%, #FFF176 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: -0.02em;
     animation: fadeInDown 0.6s ease-out;
+    filter: drop-shadow(0 0 20px rgba(236, 199, 25, 0.4));
 }
 
 @keyframes fadeInDown {
@@ -50,7 +58,7 @@ THEME_CSS = """
 
 .subtitle {
     text-align: center;
-    color: #666666;
+    color: #b8b8b8;
     font-size: 1.2rem;
     margin-bottom: 2.5rem;
     font-weight: 500;
@@ -58,23 +66,21 @@ THEME_CSS = """
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* ------ DOMAIN CARDS (Modern Glass Morphism) ------ */
+/* ------ DOMAIN CARDS (Vibrant Glass Morphism) ------ */
 .domain-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(45, 45, 45, 0.9) 100%);
+    backdrop-filter: blur(20px);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(236, 199, 25, 0.1);
+    border: 1px solid rgba(236, 199, 25, 0.2);
     position: relative;
     overflow: hidden;
 }
@@ -86,7 +92,7 @@ THEME_CSS = """
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #ECC719, #FFD700);
+    background: linear-gradient(90deg, #ECC719, #FFD700, #FFF176);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -96,29 +102,39 @@ THEME_CSS = """
 }
 
 .domain-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 16px 48px rgba(236, 199, 25, 0.15);
-    border-color: rgba(236, 199, 25, 0.3);
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 
+        0 20px 60px rgba(236, 199, 25, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(236, 199, 25, 0.5);
 }
 
 .domain-card h3 {
-    color: #1a1a1a;
+    color: #ECC719 !important;
     margin-bottom: 0.8rem;
     font-size: 1.35rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    text-shadow: 0 2px 10px rgba(236, 199, 25, 0.3);
 }
 
-/* ------ RESPONSE BOX (Premium Design) ------ */
+.domain-card p {
+    color: #b8b8b8 !important;
+}
+
+/* ------ RESPONSE BOX (Elevated Design) ------ */
 .response-box {
-    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(40, 40, 40, 0.95) 100%);
     border-left: 6px solid #ECC719;
     padding: 2rem;
     border-radius: 16px;
     margin: 1.5rem 0;
-    color: #1a1a1a;
+    color: #e0e0e0;
     line-height: 1.8;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(236, 199, 25, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: relative;
     overflow: hidden;
     animation: slideInUp 0.5s ease-out;
@@ -138,294 +154,185 @@ THEME_CSS = """
 .response-box::after {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(236, 199, 25, 0.03) 0%, transparent 70%);
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(236, 199, 25, 0.08) 0%, transparent 70%);
     pointer-events: none;
 }
 
-.response-box p {
-    color: #2a2a2a !important;
-    font-size: 1.05rem;
-    margin-bottom: 0.8rem;
-}
-
 .response-box strong {
-    color: #D0A310;
+    color: #FFD700 !important;
     font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
-/* ------ BUTTONS (Premium Ombee Style) ------ */
+/* ------ BUTTONS (Glowing Premium Style) ------ */
 .stButton>button {
-    background: linear-gradient(135deg, #ECC719 0%, #FFD700 100%);
-    color: #1a1a1a;
-    font-weight: 600;
-    border-radius: 12px;
-    padding: 0.9rem 1.8rem;
-    border: none;
-    box-shadow: 0 6px 20px rgba(236, 199, 25, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 1rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.stButton>button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.stButton>button:hover::before {
-    width: 300px;
-    height: 300px;
+    background: linear-gradient(135deg, #ECC719 0%, #FFD700 100%) !important;
+    color: #0a0a0a !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    padding: 0.9rem 1.8rem !important;
+    border: none !important;
+    box-shadow: 
+        0 8px 25px rgba(236, 199, 25, 0.4),
+        0 0 30px rgba(236, 199, 25, 0.2) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 1rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .stButton>button:hover {
-    background: linear-gradient(135deg, #D0A310 0%, #ECC719 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(236, 199, 25, 0.4);
+    background: linear-gradient(135deg, #FFD700 0%, #FFF176 100%) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 
+        0 12px 35px rgba(236, 199, 25, 0.5),
+        0 0 50px rgba(236, 199, 25, 0.3) !important;
 }
 
-.stButton>button:active {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(236, 199, 25, 0.3);
-}
-
-/* ------ TEXT INPUT (Modern Focus State) ------ */
+/* ------ TEXT INPUT (Glowing Focus) ------ */
 .stTextInput>div>div>input {
-    background: #ffffff;
-    border: 2px solid #e8e8e8;
-    border-radius: 12px;
-    padding: 1rem 1.2rem;
-    color: #1a1a1a;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    background: rgba(30, 30, 30, 0.9) !important;
+    border: 2px solid rgba(236, 199, 25, 0.3) !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.2rem !important;
+    color: #e0e0e0 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 1rem !important;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .stTextInput>div>div>input:focus {
-    border-color: #ECC719;
-    box-shadow: 0 4px 20px rgba(236, 199, 25, 0.2);
-    outline: none;
-    transform: translateY(-2px);
+    border-color: #ECC719 !important;
+    box-shadow: 
+        0 6px 25px rgba(236, 199, 25, 0.3),
+        0 0 30px rgba(236, 199, 25, 0.2) !important;
+    outline: none !important;
+    background: rgba(40, 40, 40, 0.95) !important;
 }
 
 .stTextInput>div>div>input::placeholder {
-    color: #999999;
+    color: #777777 !important;
 }
 
-/* ------ INFO / SUCCESS / WARNING BOXES (Enhanced) ------ */
-.stInfo, .stSuccess, .stWarning {
+/* ------ INFO / SUCCESS / WARNING BOXES ------ */
+div[data-testid="stNotification"] {
     border-radius: 12px !important;
-    color: #333333 !important;
-    padding: 1rem 1.2rem !important;
-    font-weight: 500 !important;
-    animation: slideInRight 0.4s ease-out;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.stInfo {
-    background: linear-gradient(135deg, #FFF8E1 0%, #FFFBF0 100%) !important;
+div[data-testid="stNotification"][data-baseweb="notification"] > div {
+    background: linear-gradient(135deg, rgba(236, 199, 25, 0.15) 0%, rgba(255, 215, 0, 0.1) 100%) !important;
     border-left: 6px solid #ECC719 !important;
-    box-shadow: 0 4px 12px rgba(236, 199, 25, 0.1);
+    color: #FFD700 !important;
 }
 
-.stSuccess {
-    background: linear-gradient(135deg, #E8F5E9 0%, #F1F8F2 100%) !important;
-    border-left: 6px solid #4CAF50 !important;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+/* ------ MARKDOWN TEXT IN MAIN AREA ------ */
+.main .block-container h1,
+.main .block-container h2,
+.main .block-container h3,
+.main .block-container h4 {
+    color: #ECC719 !important;
 }
 
-.stWarning {
-    background: linear-gradient(135deg, #FFF3E0 0%, #FFF9F0 100%) !important;
-    border-left: 6px solid #FF9800 !important;
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.1);
+.main .block-container p,
+.main .block-container li,
+.main .block-container span {
+    color: #c0c0c0 !important;
 }
 
-/* ------ SIDEBAR (Premium Dark Mode) ------ */
+/* ------ SIDEBAR (Enhanced Dark Premium) ------ */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%) !important;
-    border-right: none;
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
-}
-
-section[data-testid="stSidebar"] .stMarkdown {
-    color: #e0e0e0 !important;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%) !important;
+    border-right: 1px solid rgba(236, 199, 25, 0.2) !important;
 }
 
 section[data-testid="stSidebar"] h3 {
     color: #ECC719 !important;
-    font-weight: 700;
-    margin-bottom: 1rem;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 10px rgba(236, 199, 25, 0.3);
 }
 
-section[data-testid="stSidebar"] p {
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] li {
     color: #b8b8b8 !important;
-    line-height: 1.6;
 }
 
 section[data-testid="stSidebar"] hr {
-    border-color: rgba(236, 199, 25, 0.2) !important;
-    margin: 1.5rem 0;
+    border-color: rgba(236, 199, 25, 0.3) !important;
+    box-shadow: 0 1px 5px rgba(236, 199, 25, 0.2);
 }
 
-/* ------ EXPANDER (Modern Accordion) ------ */
-.streamlit-expanderHeader {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%) !important;
-    border-radius: 12px;
-    padding: 0.8rem 1.2rem;
-    color: #1a1a1a !important;
-    border: 1px solid #e8e8e8;
-    transition: all 0.3s ease;
-    font-weight: 600;
+/* ------ METRICS (Glowing Dashboard) ------ */
+div[data-testid="stMetric"] {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(40, 40, 40, 0.85) 100%) !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(236, 199, 25, 0.2) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
 }
 
-.streamlit-expanderHeader:hover {
-    background: linear-gradient(135deg, #FFF8E1 0%, #ffffff 100%) !important;
-    border-color: #ECC719;
-    transform: translateX(4px);
+div[data-testid="stMetricValue"] {
+    color: #FFD700 !important;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
-/* ------ METRICS (Dashboard Style) ------ */
-[data-testid="stMetricValue"] {
-    color: #ECC719 !important;
-    font-weight: 800 !important;
-    font-size: 2rem !important;
-}
-
-[data-testid="stMetricLabel"] {
+div[data-testid="stMetricLabel"] {
     color: #999999 !important;
-    font-weight: 600 !important;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
 }
 
-[data-testid="stMetric"] {
-    background: rgba(255, 255, 255, 0.5);
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(236, 199, 25, 0.1);
+/* ------ EXPANDER ------ */
+details[data-testid="stExpander"] summary {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(40, 40, 40, 0.9) 100%) !important;
+    border-radius: 12px !important;
+    color: #ECC719 !important;
+    border: 1px solid rgba(236, 199, 25, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* ------ GENERAL TEXT ENHANCEMENTS ------ */
-h1, h2, h3, h4, h5, h6 {
-    color: #1a1a1a !important;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-}
-
-p, li, span {
-    color: #444444 !important;
-    line-height: 1.7;
+details[data-testid="stExpander"] summary:hover {
+    border-color: #ECC719 !important;
+    box-shadow: 0 6px 20px rgba(236, 199, 25, 0.2) !important;
 }
 
 /* ------ HORIZONTAL RULE ------ */
 hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #ECC719 50%, transparent 100%);
-    margin: 2rem 0;
+    border: none !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent 0%, #ECC719 50%, transparent 100%) !important;
+    margin: 2rem 0 !important;
+    box-shadow: 0 0 10px rgba(236, 199, 25, 0.3);
 }
 
-/* ------ SPINNER (Loading Animation) ------ */
-.stSpinner > div {
-    border-top-color: #ECC719 !important;
-}
-
-/* ------ SCROLLBAR STYLING ------ */
+/* ------ SCROLLBAR ------ */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: #1a1a1a;
 }
 
 ::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #ECC719 0%, #FFD700 100%);
     border-radius: 10px;
-    transition: background 0.3s ease;
+    box-shadow: 0 0 10px rgba(236, 199, 25, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #D0A310 0%, #ECC719 100%);
+    background: linear-gradient(135deg, #FFD700 0%, #FFF176 100%);
 }
 
-/* ------ EXAMPLE QUERY BUTTONS ------ */
-.stButton>button[key^="example_"] {
-    background: #ffffff;
-    color: #1a1a1a;
-    border: 2px solid #e8e8e8;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 0.7rem 1.2rem;
-}
-
-.stButton>button[key^="example_"]:hover {
-    background: #FFF8E1;
-    border-color: #ECC719;
-    color: #1a1a1a;
-    box-shadow: 0 4px 16px rgba(236, 199, 25, 0.2);
-}
-
-/* ------ RESPONSIVE DESIGN ------ */
-@media (max-width: 768px) {
-    .main-header {
-        font-size: 2rem;
-        padding: 1.5rem 0 0.5rem 0;
-    }
-    
-    .subtitle {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .domain-card {
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .response-box {
-        padding: 1.5rem;
-    }
-}
-
-/* ------ PULSE ANIMATION FOR ACTIVE STATUS ------ */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-}
-
-.domain-card p[style*="color: #4CAF50"] {
-    animation: pulse 2s ease-in-out infinite;
-}
+/* ------ HIDE STREAMLIT BRANDING ------ */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
 </style>
 """
 

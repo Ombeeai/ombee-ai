@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import re
 from src.router import detect_domain
 from src.retriever import retrieve_context
 from src.llm import generate_response
@@ -27,11 +28,26 @@ if 'current_query' not in st.session_state:
     st.session_state['current_query'] = ''
 if 'process_query' not in st.session_state:
     st.session_state['process_query'] = False
+if 'last_response' not in st.session_state:
+    st.session_state['last_response'] = None
 
-# callback to submit when Enter is pressed in the text input
+def convert_markdown_to_html(text):
+    """Convert basic markdown syntax to HTML for rendering."""
+    # Convert bold
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+    # Convert italics
+    text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', text)
+    # Convert line breaks
+    text = text.replace('\n', '<br>')
+    return text
+
+# Callback to submit when Enter is pressed in the text input
 def submit_on_enter():
-    st.session_state['current_query'] = st.session_state.get('query_input', '')
-    st.session_state['process_query'] = True
+    if st.session_state.get('query_input','').strip():
+        st.session_state['current_query'] = st.session_state.get('query_input', '')
+        st.session_state['process_query'] = True
+        # Clear input after submission
+        st.session_state['query_input'] = ''  
 
 # Header with logo
 logo_base64 = get_base64_image("ombee_icon.png")
@@ -64,7 +80,7 @@ with col2:
         <h3>💰 Ombee Finance</h3>
         <p style='color: #FFB300; font-weight: bold; font-size: 1.3rem; margin: 0.5rem 0;'>🔄 In Development</p>
         <p style='font-size: 0.9rem; color: #cccccc; margin: 0;'>Budget & Spending</p>
-        <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q1 2025</p>
+        <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q2 2026</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -74,7 +90,7 @@ with col3:
         <h3>📱 Ombee Wireless</h3>
         <p style='color: #FFB300; font-weight: bold; font-size: 1.3rem; margin: 0.5rem 0;'>🔄 In Development</p>
         <p style='font-size: 0.9rem; color: #cccccc; margin: 0;'>Mobile & Plans</p>
-        <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q1 2025</p>
+        <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q2 2026</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -102,10 +118,30 @@ for idx, (label, query_text) in enumerate(example_queries.items()):
     with col:
         if st.button(label, key=f"example_{idx}"):
             # fill input field and trigger processing
-            st.session_state['query_input'] = query_text
+            st.session_state['query_input'] = ''
             st.session_state['current_query'] = query_text
             st.session_state['process_query'] = True
             st.rerun()
+
+# Hide the "Press Enter to apply" message
+st.markdown("""
+    <style>
+    /* Hide the "Press Enter to apply" message */
+    .stTextInput > div > div > input {
+        caret-color: auto;
+    }
+    .stTextInput [data-testid="InputInstructions"] {
+        display: none !important;
+    }
+    .stTextInput > label > div[data-testid="InputInstructions"] {
+        display: none !important;
+    }
+    div[data-testid="InputInstructions"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Text input with Enter key support
 query = st.text_input(
@@ -116,17 +152,15 @@ query = st.text_input(
     label_visibility="collapsed"
 )
 
-# keep current_query in sync when typing (doesn't auto-submit until Enter)
-if st.session_state['query_input'] != st.session_state['current_query'] and not st.session_state['process_query']:
-    st.session_state['current_query'] = st.session_state['query_input']
-
 # Ask button
 ask_clicked = st.button("Ask Ombee 🐝", type="primary", use_container_width=True)
 
-# Process query if button clicked or Enter was pressed (query changed and has content)
-if ask_clicked:
-    st.session_state['current_query'] = st.session_state.get('query_input', '')
+# Process query if button clicked
+if ask_clicked and st.session_state.get('query_input','').strip():
+    st.session_state['current_query'] = st.session_state['query_input']
     st.session_state['process_query'] = True
+    st.session_state['query_input'] = ''  # clear input after submission
+    st.rerun()
 
 query_to_process = st.session_state['current_query']
 
@@ -206,7 +240,7 @@ if st.session_state['process_query'] and query_to_process:
                 st.warning(f"Failed to log to Phoenix: {e}")
         
         # Display response in styled box with proper line breaks
-        response_html = response_text.replace('\n', '<br>')
+        response_html = convert_markdown_to_html(response_text)
         st.markdown(f"""
         <div class='response-box'>
             {response_html}
@@ -219,7 +253,7 @@ if st.session_state['process_query'] and query_to_process:
         elif status == 'demo':
             st.info("📊 Demo Data - Feature Preview (Phase 2)")
         elif status == 'coming-soon':
-            st.warning("🔄 Feature In Development - Coming Q1 2025")
+            st.warning("🔄 Feature In Development - Coming Q2 2026")
         
         # Sources
         if sources:
@@ -247,7 +281,7 @@ if st.session_state['process_query'] and query_to_process:
             - Ombee Finance
             - Ombee Wireless
             
-            Full integration coming Q1 2025.
+            Full integration coming Q2 2026.
             """)
         else:
             st.markdown("""
@@ -258,6 +292,15 @@ if st.session_state['process_query'] and query_to_process:
             The holistic health domain is live now!
             """)
     
+    # Store response data
+    st.session_state['last_response'] = {
+        'query': query_to_process,
+        'domain': domain,
+        'response': response_text,
+        'status': status,
+        'sources': sources
+    }
+
     # Reset the process flag after handling
     st.session_state['process_query'] = False
 
@@ -281,7 +324,7 @@ with st.sidebar:
     - Health education
     - Wellness support
     
-    **Coming in Phase 2 (Q1 2025):**
+    **Coming in Phase 2 (Q2 2026):**
     - 💰 Ombee Finance integration
     - 📱 Ombee Wireless integration
     """)
