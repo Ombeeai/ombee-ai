@@ -2,6 +2,7 @@ from pinecone import Pinecone
 import cohere
 from src.config import PINECONE_API_KEY, COHERE_API_KEY
 from typing import Tuple, List
+import time
 
 print("🔧 Initializing Pinecone retriever...")
 
@@ -22,20 +23,21 @@ except Exception as e:
     print(f"❌ Cohere initialization failed: {e}")
     co = None
 
-def retrieve_context(query: str, n_results: int = 5) -> Tuple[str, List[str]]:
+def retrieve_context(query: str, n_results: int = 5) -> Tuple[str, List[str], float]:
     """
     Retrieve relevant context for a query from Pinecone.
-    Returns: (context_string, list_of_sources)
+    Returns: (context_string, list_of_sources, retrieval_time_seconds)
     """
     print(f"  🔍 Retrieving context from Pinecone...")
+    start = time.time()
     
     if index is None:
         print("  ❌ Pinecone index not available!")
-        return "Error: Pinecone not initialized. Check API key.", []
+        return "Error: Pinecone not initialized. Check API key.", [], 0.0
     
     if co is None:
         print("  ❌ Cohere client not available!")
-        return "Error: Cohere not initialized.", []
+        return "Error: Cohere not initialized.", [], 0.0
     
     try:
         # Embed the query
@@ -73,10 +75,14 @@ def retrieve_context(query: str, n_results: int = 5) -> Tuple[str, List[str]]:
         else:
             context = "No relevant information found."
         
-        return context, sources
+        end = time.time()
+        retrieval_time = end - start
+        return context, sources, retrieval_time
     
     except Exception as e:
         print(f"  ❌ Error during retrieval: {e}")
         import traceback
         traceback.print_exc()
-        return f"Error: {str(e)}", []
+        end = time.time()
+        retrieval_time = end - start
+        return f"Error: {str(e)}", [], retrieval_time

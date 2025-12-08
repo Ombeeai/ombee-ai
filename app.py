@@ -188,6 +188,11 @@ if st.session_state['process_query'] and query_to_process:
         st.info(f"{domain_icons.get(domain, '🔍')} **Routed to {domain.upper()} domain** (confidence: {confidence:.0%})")
         
         context = ""
+        retrieval_time = None
+        generation_time = None
+        cumulative_tokens = None
+        cumulative_cost = None
+
         # Generate response
         with st.spinner("💭 Generating response..."):
             time.sleep(0.5)
@@ -204,8 +209,8 @@ if st.session_state['process_query'] and query_to_process:
             elif domain == 'holistic':
                 # Real RAG response
                 try:
-                    context, sources = retrieve_context(query_to_process)
-                    response_text = generate_response(query_to_process, context)
+                    context, sources, retrieval_time = retrieve_context(query_to_process)
+                    response_text, generation_time, cumulative_tokens, cumulative_cost = generate_response(query_to_process, context)
                     status = 'live'
                 except Exception as e:
                     st.error(f"Error generating response: {str(e)}")
@@ -234,7 +239,11 @@ if st.session_state['process_query'] and query_to_process:
                     sources=sources,
                     latency=latency,
                     context=context,
-                    status=status
+                    status=status,
+                    retrieval_time=retrieval_time,
+                    generation_time=generation_time,
+                    cumulative_tokens=cumulative_tokens,
+                    cumulative_cost=cumulative_cost
                 )
             except Exception as e:
                 st.warning(f"Failed to log to Phoenix: {e}")
