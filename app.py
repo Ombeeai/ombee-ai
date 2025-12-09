@@ -5,8 +5,22 @@ from src.router import detect_domain
 from src.retriever import retrieve_context
 from src.llm import generate_response
 from src.demo_responses import get_demo_response, get_coming_soon_message
-from src.theme import apply_theme, get_base64_image
+from src.theme import (
+    apply_theme, 
+    apply_login_page_styles, 
+    apply_main_page_styles,
+    apply_sidebar_styles,
+    get_base64_image
+)
 from src.monitoring import get_monitor
+from src.auth import (
+    init_auth_state,
+    is_authenticated,
+    render_login_page,
+    render_user_profile_sidebar,
+    get_current_user,
+    get_user_context_for_rag
+)
 
 monitor = get_monitor()
 
@@ -18,8 +32,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Apply theme (inject CSS)
+# Apply main theme (inject CSS)
 apply_theme()
+
+# Initialize authentication state
+init_auth_state()
+
+# ==== AUTHENTICATION STATE =====
+if not is_authenticated():
+    apply_login_page_styles()
+    render_login_page()
+    st.stop()
+
+# Apply main page styles
+apply_main_page_styles()
+
+current_user = get_current_user()
+user_context = get_user_context_for_rag(current_user)
 
 # Initialize session state for query handling
 if 'query_input' not in st.session_state:
@@ -123,26 +152,6 @@ for idx, (label, query_text) in enumerate(example_queries.items()):
             st.session_state['process_query'] = True
             st.rerun()
 
-# Hide the "Press Enter to apply" message
-st.markdown("""
-    <style>
-    /* Hide the "Press Enter to apply" message */
-    .stTextInput > div > div > input {
-        caret-color: auto;
-    }
-    .stTextInput [data-testid="InputInstructions"] {
-        display: none !important;
-    }
-    .stTextInput > label > div[data-testid="InputInstructions"] {
-        display: none !important;
-    }
-    div[data-testid="InputInstructions"] {
-        visibility: hidden !important;
-        display: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # Text input with Enter key support
 query = st.text_input(
     "Your question:",
@@ -209,8 +218,12 @@ if st.session_state['process_query'] and query_to_process:
             elif domain == 'holistic':
                 # Real RAG response
                 try:
-                    context, sources, retrieval_time = retrieve_context(query_to_process)
-                    response_text, generation_time, cumulative_tokens, cumulative_cost = generate_response(query_to_process, context)
+                    context_enhanced_query = f"{user_context} | Query: {query_to_process}" if user_context else query_to_process
+                    context, sources, retrieval_time = retrieve_context(context_enhanced_query)
+                    response_text, generation_time, cumulative_tokens, cumulative_cost = generate_response(
+                        query_to_process,
+                        context,
+                        user_context=user_context)
                     status = 'live'
                 except Exception as e:
                     st.error(f"Error generating response: {str(e)}")
@@ -243,7 +256,9 @@ if st.session_state['process_query'] and query_to_process:
                     retrieval_time=retrieval_time,
                     generation_time=generation_time,
                     cumulative_tokens=cumulative_tokens,
-                    cumulative_cost=cumulative_cost
+                    cumulative_cost=cumulative_cost,
+                    user_id=current_user.get('user_id'),
+                    user_context=user_context
                 )
             except Exception as e:
                 st.warning(f"Failed to log to Phoenix: {e}")
@@ -274,13 +289,16 @@ if st.session_state['process_query'] and query_to_process:
         # Info box
         st.markdown("### About This Response")
         if status == 'live':
-            st.markdown("""
-            **✅ Live AI Response**
+            st.markdown(f"""
+            **✅ Personalized for You**
             
-            This answer was generated using:
-            - Ombee's curated health knowledge base
-            - Real-time semantic search
-            - AI synthesis from authoritative sources
+            This answer considered:
+            - Your dietary preferences
+            - Your health goals
+            - Ombee's knowledge base
+            - Real-time AI synthesis
+            
+            *Tailored for {current_user['name']}*
             """)
         elif status == 'demo':
             st.markdown("""
@@ -313,8 +331,11 @@ if st.session_state['process_query'] and query_to_process:
     # Reset the process flag after handling
     st.session_state['process_query'] = False
 
-# Sidebar with logo
+# Sidebar with user profile and info
 with st.sidebar:
+    # Apply sidebar styles
+    apply_sidebar_styles()
+    
     # Add logo to sidebar
     if logo_base64:
         st.markdown(f"""
@@ -323,6 +344,10 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
     
+    render_user_profile_sidebar()
+
+    st.markdown("---")
+
     st.markdown("### About Ombee AI")
     st.markdown("""
     Ombee AI is your intelligent personal assistant that understands your health, finances, and connectivity needs.
