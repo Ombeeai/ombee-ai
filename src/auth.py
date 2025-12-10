@@ -83,39 +83,7 @@ def handle_email_confirmation():
             access_token = query_params.get("access_token")
             token_type = query_params.get("type", "")
             
-            # Handle signup confirmation - auto-login the user
-            if token_type == "signup":
-                try:
-                    # Get user from token
-                    response = st.session_state.supabase_client.auth.get_user(access_token)
-                    
-                    if response.user:
-                        # Fetch user profile
-                        user_profile = st.session_state.supabase_client.table('user_profiles').select('*').eq('user_id', response.user.id).execute()
-                        
-                        if user_profile.data:
-                            user_data = user_profile.data[0]
-                            user_data['email'] = response.user.email
-                            
-                            # Auto-login the user
-                            st.session_state.authenticated = True
-                            st.session_state.user_data = user_data
-                            
-                            # Clear query parameters
-                            st.query_params.clear()
-                            
-                            st.success("✅ Email confirmed! Welcome to Ombee AI!")
-                            st.balloons()
-                            st.rerun()
-                            return True
-                except Exception as login_error:
-                    st.error(f"Auto-login failed: {login_error}")
-                    st.info("Please log in manually below.")
-                    st.session_state.auth_mode = 'login'
-                    st.query_params.clear()
-                    return True
-            
-            elif token_type == "recovery":
+            if token_type == "recovery":
                 st.info("🔑 Password reset link verified. Please enter your new password.")
                 st.query_params.clear()
                 return True
@@ -131,7 +99,7 @@ def handle_email_confirmation():
     
     return False
 
-def supabase_signup(email: str, password: str, name: str, supabase) -> tuple[bool, str]:
+def supabase_signup(email: str, password: str, name: str, supabase) -> tuple[bool, str, dict | None]:
     """Supabase signup with trigger-based profile creation"""
     try:
         # Create auth user with name in metadata
@@ -150,16 +118,17 @@ def supabase_signup(email: str, password: str, name: str, supabase) -> tuple[boo
             # Check if this is an existing user trying to sign up again
             # Supabase returns the user but with identities empty for existing users
             if hasattr(response.user, 'identities') and len(response.user.identities) == 0:
-                return False, "An account with this email already exists. Please log in instead."
+                return False, "An account with this email already exists. Please log in instead.", None
             
-            # Check if email confirmation is required
-            if response.user.confirmed_at is None:
-                return True, "Account created! Please check your email to verify."
+            # Call login right after signup to set session
+            success, message, user_data = supabase_login(email, password, supabase)
+            
+            if success:
+                return True, "Account created successfully! Welcome to Ombee AI!", user_data
             else:
-                # Email confirmation is disabled, user is ready to log in
-                return True, "Account created successfully! You can now log in."
+                return False, f"Account created, but automatic login failed: {message}", None
         else:
-            return False, "Signup failed - no user returned"
+            return False, "Signup failed - no user returned", None
             
     except Exception as e:
         error_msg = str(e)
@@ -167,17 +136,18 @@ def supabase_signup(email: str, password: str, name: str, supabase) -> tuple[boo
         # Check if it's just the "Database error saving new user" message
         # but the user was actually created (common with triggers)
         if "Database error saving new user" in error_msg:
-            return True, "Account created! Please check your email to verify."
+            return True, "Account created! Attempting to log you in...", None
         
         # Handle other specific errors
         if "User already registered" in error_msg or "already registered" in error_msg.lower():
-            return False, "An account with this email already exists. Please log in instead."
+            return False, "An account with this email already exists. Please log in instead.", None
         
         if "Password should be at least" in error_msg:
-            return False, "Password is too weak. Please use at least 8 characters."
+            return False, "Password is too weak. Please use at least 8 characters.", None
+        
         
         # Generic error
-        return False, f"Signup error: {error_msg}"
+        return False, f"Signup error: {error_msg}", None
 
 def login(email: str, password: str) -> tuple[bool, str]:
     """Login with Supabase"""
@@ -197,7 +167,14 @@ def signup(email: str, password: str, name: str) -> tuple[bool, str]:
     if not st.session_state.supabase_client:
         return False, "Database connection unavailable"
     
-    return supabase_signup(email, password, name, st.session_state.supabase_client)
+    success, message, user_data = supabase_signup(email, password, name, st.session_state.supabase_client)
+
+    if success and user_data:
+        st.session_state.authenticated = True
+        st.session_state.user_data = user_data
+        return True, message
+    else:
+        return success, message
 
 def logout():
     """Logout current user"""
@@ -210,6 +187,7 @@ def logout():
     st.session_state.authenticated = False
     st.session_state.user_data = None
     st.session_state.show_login = True
+    st.session_state.auth_mode = 'login'
 
 def get_current_user():
     """Get current logged-in user data"""
@@ -360,8 +338,11 @@ def render_login_page():
                         if success:
                             st.success(f"✅ {message}")
                             st.balloons()
-                            # Switch to login mode after successful signup
-                            st.session_state.auth_mode = 'login'
+                            # Rerun to reflect authenticated state
+                            if is_authenticated():
+                                st.rerun()
+                            else:
+                                st.session_state.auth_mode = 'login'
                         else:
                             st.error(f"❌ {message}")
                         st.session_state.process_signup = False

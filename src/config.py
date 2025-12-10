@@ -11,7 +11,7 @@ def get_secret(key, default=None):
         # Provide error if a required key is missing
         if default is None:
             raise KeyError(f"Configuration key '{key}' not found in Streamlit secrets.")
-        return os.getenv(key, default)
+        return default
 
 # API Keys
 PINECONE_API_KEY = get_secret("PINECONE_API_KEY")
