@@ -32,7 +32,7 @@ warnings.filterwarnings("ignore", message="Could not infer collector endpoint pr
 class OmbeeMonitor:
     """Monitor and trace all RAG interactions to Phoenix Cloud"""
 
-    def __init__(self, project_name="ombee-ai-demo"):
+    def __init__(self, project_name="ombee-ai"):
         self.project_name = project_name
         self.api_key = PHOENIX_API_KEY
         self.phoenix_collector_endpoint = PHOENIX_COLLECTOR_ENDPOINT or "https://app.phoenix.arize.com"
@@ -184,7 +184,7 @@ class OmbeeMonitor:
             traceback.print_exc()
 
 # Global monitor instance and accessor
-monitor = OmbeeMonitor(project_name="ombee-ai-demo")
+monitor = OmbeeMonitor(project_name="ombee-ai")
 monitor.start_monitoring()
 
 def get_monitor():

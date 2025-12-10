@@ -19,7 +19,8 @@ from src.auth import (
     render_login_page,
     render_user_profile_sidebar,
     get_current_user,
-    get_user_context_for_rag
+    get_user_context_for_rag,
+    is_admin
 )
 
 monitor = get_monitor()
@@ -49,6 +50,17 @@ apply_main_page_styles()
 
 current_user = get_current_user()
 user_context = get_user_context_for_rag(current_user)
+
+# Hide admin page from sidebar for non-admin users
+if not is_admin(current_user):
+    st.markdown("""
+    <style>
+    /* Hide admin_upload page from sidebar navigation */
+    [data-testid="stSidebarNav"] a[href*="admin_upload"] {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Initialize session state for query handling
 if 'query_input' not in st.session_state:
@@ -96,7 +108,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("""
     <div class='domain-card' style='border: 2px solid #4CAF50;'>
-        <h3>💚 Holistic Health</h3>
+        <h3>Holistic Health</h3>
         <p style='color: #4CAF50; font-weight: bold; font-size: 1.3rem; margin: 0.5rem 0;'>✅ Active</p>
         <p style='font-size: 0.9rem; color: #cccccc; margin: 0;'>Nutrition & Wellness</p>
         <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Live Now</p>
@@ -106,7 +118,7 @@ with col1:
 with col2:
     st.markdown("""
     <div class='domain-card' style='border: 2px solid #FFB300;'>
-        <h3>💰 Ombee Finance</h3>
+        <h3>Ombee Finance</h3>
         <p style='color: #FFB300; font-weight: bold; font-size: 1.3rem; margin: 0.5rem 0;'>🔄 In Development</p>
         <p style='font-size: 0.9rem; color: #cccccc; margin: 0;'>Budget & Spending</p>
         <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q2 2026</p>
@@ -116,7 +128,7 @@ with col2:
 with col3:
     st.markdown("""
     <div class='domain-card' style='border: 2px solid #FFB300;'>
-        <h3>📱 Ombee Wireless</h3>
+        <h3>Ombee Wireless</h3>
         <p style='color: #FFB300; font-weight: bold; font-size: 1.3rem; margin: 0.5rem 0;'>🔄 In Development</p>
         <p style='font-size: 0.9rem; color: #cccccc; margin: 0;'>Mobile & Plans</p>
         <p style='font-size: 0.85rem; color: #999999; margin-top: 0.5rem;'>Phase 2 - Q2 2026</p>

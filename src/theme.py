@@ -33,6 +33,107 @@ section[data-testid="stSidebar"] {
 </style>
 """
 
+# CSS for login page styling
+LOGIN_STYLES_CSS = """
+<style>
+/* Login page logo */
+.login-logo-container {
+    text-align: center;
+    margin: 2rem 0 1.5rem 0;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.login-logo {
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 8px 24px rgba(236, 199, 25, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.login-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Login title and subtitle */
+.login-title {
+    text-align: center;
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin: 1.5rem 0 0.5rem 0;
+    background: linear-gradient(135deg, #ECC719 0%, #FFD700 50%, #FFF176 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: #999999;
+    font-size: 1.05rem;
+    margin-bottom: 2.5rem;
+    font-weight: 400;
+    animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+/* Demo info card */
+.demo-info-card {
+    background: linear-gradient(135deg, rgba(236, 199, 25, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 1px solid rgba(236, 199, 25, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.demo-info-title {
+    color: #ECC719;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.demo-credentials {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.demo-credentials span {
+    color: #b8b8b8;
+    font-size: 0.95rem;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Login page input labels */
+.stTextInput > label {
+    color: #ECC719 !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 0.5rem !important;
+}
+</style>
+"""
+
 # CSS for hiding "Press Enter to apply" message
 HIDE_INPUT_INSTRUCTIONS_CSS = """
 <style>
@@ -328,6 +429,20 @@ span[data-baseweb="icon"],
         0 0 50px rgba(236, 199, 25, 0.3) !important;
 }
 
+/* Secondary button style */
+.stButton>button[kind="secondary"] {
+    background: linear-gradient(135deg, rgba(236, 199, 25, 0.15) 0%, rgba(255, 215, 0, 0.1) 100%) !important;
+    color: #ECC719 !important;
+    border: 2px solid rgba(236, 199, 25, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stButton>button[kind="secondary"]:hover {
+    background: linear-gradient(135deg, rgba(236, 199, 25, 0.25) 0%, rgba(255, 215, 0, 0.15) 100%) !important;
+    border-color: #ECC719 !important;
+    transform: translateY(-2px) !important;
+}
+
 /* ------ TEXT INPUT (Glowing Focus) ------ */
 .stTextInput>div>div>input {
     background: rgba(30, 30, 30, 0.9) !important;
@@ -517,6 +632,11 @@ def apply_theme(from_file: str | None = None):
 def apply_login_page_styles():
     """Apply CSS specific to the login page (hides sidebar, adjusts layout)"""
     st.markdown(LOGIN_PAGE_CSS, unsafe_allow_html=True)
+    st.markdown(HIDE_INPUT_INSTRUCTIONS_CSS, unsafe_allow_html=True)
+
+def apply_login_styles():
+    """Apply login-specific styles (logo, title, demo card)"""
+    st.markdown(LOGIN_STYLES_CSS, unsafe_allow_html=True)
     st.markdown(HIDE_INPUT_INSTRUCTIONS_CSS, unsafe_allow_html=True)
 
 def apply_main_page_styles():
