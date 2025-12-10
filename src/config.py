@@ -1,20 +1,16 @@
 import streamlit as st
-import os
-from dotenv import load_dotenv
-
-# Load .env for local development
-load_dotenv()
 
 def get_secret(key, default=None):
     """
-    Get secret from Streamlit Cloud secrets or environment variables.
-    Works in both local and deployed environments.
+    Get secret from st.secrets
     """
     try:
         # Try Streamlit secrets first (for Streamlit Cloud)
         return st.secrets[key]
-    except (KeyError, FileNotFoundError):
-        # Fall back to environment variables (for local .env)
+    except KeyError:
+        # Provide error if a required key is missing
+        if default is None:
+            raise KeyError(f"Configuration key '{key}' not found in Streamlit secrets.")
         return os.getenv(key, default)
 
 # API Keys
