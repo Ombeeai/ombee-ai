@@ -23,7 +23,7 @@ Top locations:
 
 This represents 18% of your monthly food budget. You're $87 over your dining out goal of $400/month.
 
-💡 *Tip: Consider meal prepping 2-3 times per week to reduce dining costs.*
+*Tip: Consider meal prepping 2-3 times per week to reduce dining costs.*
 
 *Note: This is demo data. Full Ombee Finance integration coming Q2 2026.*""",
                 'sources': ['Ombee Finance Demo Data'],
@@ -46,7 +46,7 @@ This represents 18% of your monthly food budget. You're $87 over your dining out
 • Entertainment: $312 (9%)
 • Utilities: $221 (6%)
 
-You're on track to stay within budget! 🎉
+You're on track to stay within budget!
 
 *Note: This is demo data. Full Ombee Finance integration coming Q2 2026.*""",
                 'sources': ['Ombee Finance Demo Data'],
@@ -72,7 +72,7 @@ You're on track to stay within budget! 🎉
 • Minutes: 847 min
 • Texts: 1,234 messages
 
-Your plan is working great for your usage! All within limits. ✅
+Your plan is working great for your usage! All within limits.
 
 *Note: This is demo data. Full Ombee Wireless integration coming Q2 2026.*""",
                 'sources': ['Ombee Wireless Demo Data'],
@@ -85,7 +85,7 @@ Your plan is working great for your usage! All within limits. ✅
 
 **Data Breakdown:**
 • Total Used: 42.3 GB
-• Unlimited plan - no overage charges! ✅
+• Unlimited plan - no overage charges!
 
 **Usage by App:**
 • Streaming (Netflix, YouTube): 18.4 GB

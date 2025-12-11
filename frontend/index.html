@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ombee AI Assistant</title>
+    <link rel="icon" type="image/png" href="ombee_icon.png">
     <style>
         * {
             margin: 0;
@@ -406,8 +407,12 @@
     </div>
 
     <script>
-        // Configuration
-        const API_URL = window.location.hostname === 'localhost' 
+        // Configuration - check if running locally or in production
+        const isLocal = window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname === '';
+
+        const API_URL = isLocal
             ? 'http://localhost:8000' 
             : 'https://ombee-api.onrender.com';
 

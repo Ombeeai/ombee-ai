@@ -46,11 +46,11 @@ DEBUG = get_env("DEBUG", "false").lower() == "true"
 
 # Print configuration status
 if __name__ == "__main__":
-    print("🔧 Ombee AI Configuration:")
+    print("Ombee AI Configuration:")
     print(f"  Database: {DATABASE_URL}")
     print(f"  Pinecone Index: {PINECONE_INDEX_NAME}")
-    print(f"  Pinecone API: {'✅ Set' if PINECONE_API_KEY else '❌ Missing'}")
-    print(f"  Cohere API: {'✅ Set' if COHERE_API_KEY else '❌ Missing'}")
-    print(f"  Groq API: {'✅ Set' if GROQ_API_KEY else '❌ Missing'}")
-    print(f"  Phoenix API: {'✅ Set' if PHOENIX_API_KEY else '⚠️  Optional - monitoring disabled'}")
-    print(f"  Debug Mode: {'✅ Enabled' if DEBUG else '❌ Disabled'}")
+    print(f"  Pinecone API: {'Set' if PINECONE_API_KEY else 'Missing'}")
+    print(f"  Cohere API: {'Set' if COHERE_API_KEY else 'Missing'}")
+    print(f"  Groq API: {'Set' if GROQ_API_KEY else 'Missing'}")
+    print(f"  Phoenix API: {'Set' if PHOENIX_API_KEY else 'Optional - monitoring disabled'}")
+    print(f"  Debug Mode: {'Enabled' if DEBUG else 'Disabled'}")

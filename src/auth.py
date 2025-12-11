@@ -11,15 +11,15 @@ def init_supabase():
         from supabase import create_client
         
         if not SUPABASE_URL or not SUPABASE_API_KEY:
-            st.error("⚠️ Supabase credentials not configured. Please check your config.py")
+            st.error("Supabase credentials not configured. Please check your config.py")
             return None
         
         return create_client(SUPABASE_URL, SUPABASE_API_KEY)
     except ImportError:
-        st.error("⚠️ Supabase not installed. Run: pip install supabase")
+        st.error("Supabase not installed. Run: pip install supabase")
         return None
     except Exception as e:
-        st.error(f"❌ Supabase error: {e}")
+        st.error(f"Supabase error: {e}")
         return None
 
 def init_auth_state():
@@ -84,12 +84,12 @@ def handle_email_confirmation():
             token_type = query_params.get("type", "")
             
             if token_type == "recovery":
-                st.info("🔑 Password reset link verified. Please enter your new password.")
+                st.info("Password reset link verified. Please enter your new password.")
                 st.query_params.clear()
                 return True
             else:
                 # Generic token confirmation
-                st.success("✅ Verification successful! Please log in.")
+                st.success("Verification successful! Please log in.")
                 st.session_state.auth_mode = 'login'
                 st.query_params.clear()
                 return True
@@ -246,19 +246,19 @@ def render_login_page():
         
         # Check if Supabase is available
         if not st.session_state.supabase_client:
-            st.error("⚠️ Unable to connect to authentication service. Please check configuration.")
+            st.error("Unable to connect to authentication service. Please check configuration.")
             st.stop()
         
         # Login Form
         if st.session_state.auth_mode == 'login':
             email = st.text_input(
-                "📧 Email Address",
+                "Email Address",
                 placeholder="you@example.com",
                 key="login_email"
             )
             
             password = st.text_input(
-                "🔑 Password",
+                "Password",
                 type="password",
                 placeholder="Enter your password",
                 key="login_password"
@@ -266,20 +266,20 @@ def render_login_page():
             
             st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
             
-            login_clicked = st.button("🔐 Sign In", type="primary", use_container_width=True)
+            login_clicked = st.button("Sign In", type="primary", use_container_width=True)
             
             if login_clicked:
                 if email and password:
                     with st.spinner("Authenticating..."):
                         success, message = login(email, password)
                         if success:
-                            st.success(f"✅ {message}")
+                            st.success(message)
                             st.balloons()
                             st.rerun()
                         else:
-                            st.error(f"❌ {message}")
+                            st.error(message)
                 else:
-                    st.warning("⚠️ Please enter both email and password")
+                    st.warning("Please enter both email and password")
             
             # Switch to signup
             st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
@@ -293,26 +293,26 @@ def render_login_page():
         # Signup Form
         else:
             name = st.text_input(
-                "👤 Full Name",
+                "Full Name",
                 placeholder="John Smith",
                 key="signup_name"
             )
             
             email = st.text_input(
-                "📧 Email Address",
+                "Email Address",
                 placeholder="you@example.com",
                 key="signup_email"
             )
             
             password = st.text_input(
-                "🔑 Password",
+                "Password",
                 type="password",
                 placeholder="Choose a strong password (min. 8 characters)",
                 key="signup_password"
             )
             
             password_confirm = st.text_input(
-                "🔑 Confirm Password",
+                "Confirm Password",
                 type="password",
                 placeholder="Re-enter your password",
                 key="signup_password_confirm"
@@ -320,23 +320,23 @@ def render_login_page():
             
             st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
 
-            signup_clicked = st.button("✨ Create Account", type="primary", use_container_width=True)
+            signup_clicked = st.button("Create Account", type="primary", use_container_width=True)
             
             if signup_clicked:
                 if not name or not email or not password:
-                    st.warning("⚠️ Please fill in all fields")
+                    st.warning("Please fill in all fields")
                     st.session_state.process_signup = False
                 elif password != password_confirm:
-                    st.error("❌ Passwords do not match")
+                    st.error("Passwords do not match")
                     st.session_state.process_signup = False
                 elif len(password) < 8:
-                    st.error("❌ Password must be at least 8 characters")
+                    st.error("Password must be at least 8 characters")
                     st.session_state.process_signup = False
                 else:
                     with st.spinner("Creating your account..."):
                         success, message = signup(email, password, name)
                         if success:
-                            st.success(f"✅ {message}")
+                            st.success(message)
                             st.balloons()
                             # Rerun to reflect authenticated state
                             if is_authenticated():
@@ -344,7 +344,7 @@ def render_login_page():
                             else:
                                 st.session_state.auth_mode = 'login'
                         else:
-                            st.error(f"❌ {message}")
+                            st.error(message)
                         st.session_state.process_signup = False
             
             # Switch to login
@@ -367,7 +367,7 @@ def render_user_profile_sidebar():
     
     with st.sidebar:
         st.markdown("---")
-        st.markdown("### 👤 Your Profile")
+        st.markdown("### Your Profile")
         
         # User info card
         st.markdown(f"""
@@ -380,7 +380,7 @@ def render_user_profile_sidebar():
         """, unsafe_allow_html=True)
         
         # User preferences expander
-        with st.expander("⚙️ Preferences"):
+        with st.expander("Preferences"):
             prefs = user.get('preferences', {})
             
             if prefs.get('dietary_restrictions'):
@@ -400,7 +400,7 @@ def render_user_profile_sidebar():
         # Admin button (only show if user is admin)
         if is_admin(user):
             st.markdown("---")
-            if st.button("🔧 Admin Panel", use_container_width=True):
+            if st.button("Admin Panel", use_container_width=True):
                 # Try to navigate to admin page
                 import os
                 
@@ -425,7 +425,7 @@ def render_user_profile_sidebar():
         
         # Logout button
         st.markdown("---")
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("Logout", use_container_width=True):
             logout()
             st.rerun()
 

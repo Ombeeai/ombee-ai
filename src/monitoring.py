@@ -43,7 +43,7 @@ class OmbeeMonitor:
         """Start Phoenix Cloud tracing; register() reads env vars set below."""
         try:
             if not self.api_key:
-                print("⚠️ PHOENIX_API_KEY not found. Monitoring disabled.")
+                print("PHOENIX_API_KEY not found. Monitoring disabled.")
                 self.tracer = None
                 return None
 
@@ -60,12 +60,12 @@ class OmbeeMonitor:
             # Create tracer for span creation
             provider = trace.get_tracer_provider()
             self.tracer = trace.get_tracer(__name__)
-            print("✅ Phoenix Cloud monitoring active!")
-            print(f"📊 View dashboard at: {self.phoenix_collector_endpoint}")
+            print("Phoenix Cloud monitoring active!")
+            print(f"View dashboard at: {self.phoenix_collector_endpoint}")
             return True
 
         except Exception as e:
-            print(f"⚠️ Phoenix monitoring failed to start: {e}")
+            print(f"Phoenix monitoring failed to start: {e}")
             self.tracer = None
             return None
 
@@ -177,10 +177,10 @@ class OmbeeMonitor:
                         except Exception:
                             pass
 
-            print("✅ Phoenix log created")
+            print("Phoenix log created")
 
         except Exception as e:
-            print(f"⚠️ Failed to log query to Phoenix: {e}")
+            print(f"Failed to log query to Phoenix: {e}")
             traceback.print_exc()
 
 # Global monitor instance and accessor
