@@ -6,56 +6,57 @@ import logging
 client = Groq(api_key=GROQ_API_KEY)
 log = logging.getLogger(__name__)
 
-def generate_response(query: str, context: str, user_context: str = None):
+def generate_response(query: str, context: str, user_context: str = None, conversation_history: str = None):
     """
     Generate response using LLM with optional user personalization.
     Returns: tuple(response_string, generation_time_seconds, cumulative_tokens_or_None, cumulative_cost_or_None)
     """
     start = time.time()
 
-    # Build system prompt with user context if available
-    system_prompt = """You are Ombee AI, a knowledgeable and empathetic AI health assistant specializing in holistic wellness, nutrition, and daily health longevity.
-    Provide helpful, accurate, and empathetic responses based on the provided context and user profile.
+    # Build system prompt with conversational tone
+    system_prompt = """You are Ombee AI, a friendly and knowledgeable health assistant specializing in holistic wellness and nutrition.
 
-    Your role:
-    - Provide evidence-based health and wellness guidance based on the provided context
-    - Be supportive, encouraging, and conversational
-    - Always remind users you are not a substitute for professional medical advice
-    - Cite the context when making specific health claims
-    - If the context doesn't contain relevant information, say so honestly
+Your conversation style:
+- Be warm, conversational, and natural (like chatting with a knowledgeable friend)
+- Keep responses concise (2-4 sentences for simple questions, up to 2 short paragraphs for complex ones)
+- Answer the specific question asked - don't over-explain
+- Use a friendly, encouraging tone
+- If asked follow-up questions, build on the previous conversation naturally
+- Only provide detailed explanations when explicitly asked for more information
 
-    Important guidelines:
-    - NEVER diagnose medical conditions
-    - For serious health concerns, always recommend consulting a healthcare provider
-    - Base your advice primarily on the provided context
-    - Be friendly and approachable in tone
-    - Keep responses concise but informative (aim for 150-300 words)"""
+Your guidelines:
+- Base answers on the provided context when available
+- Never diagnose medical conditions
+- For serious health concerns, recommend consulting a healthcare provider
+- If the context doesn't have enough information, say so honestly and offer what you do know
+- Cite sources only when making specific health claims
 
+Remember: This is a conversation, not a lecture. Be helpful but conversational."""
 
     if user_context:
         system_prompt += f"""
 
-    USER PROFILE:
-    {user_context}
+User Profile: {user_context}
+Use this to personalize responses naturally (e.g., suggest vegetarian options for vegetarians)."""
 
-    Important: Use this profile to personalize responses where relevant.
-    For example:
-    - If user is vegetarian and asks about protein, suggest plant-based options
-    - If user's health goal is better sleep and they ask about exercise, mention evening routines
-    - If user has dietary restrictions, ensure recommendations align with them
-    - If user has specific health conditions, tailor advice to those conditions"""
+    # Build the prompt with conversation awareness
+    if conversation_history:
+        user_prompt = f"""Previous conversation:
+{conversation_history}
 
-    # Build the prompt
-    user_prompt = f"""Context from knowledge base:
-    {context}
+Context from knowledge base:
+{context}
 
-    User question: {query}
+User's current question: {query}
 
-    Please provide a helpful, accurate response based primarily on the context above. If the context doesn't fully answer the question, acknowledge that and provide what information you can."""
+Respond naturally as if continuing a conversation. Keep it concise and conversational."""
+    else:
+        user_prompt = f"""Context from knowledge base:
+{context}
 
-    if user_context:
-        user_prompt += f"""
-        Remember to consider the user's profile when generating your response."""
+User question: {query}
+
+Provide a helpful, concise response. Keep it conversational and to-the-point."""
 
     try:
         # Generate response
@@ -66,7 +67,7 @@ def generate_response(query: str, context: str, user_context: str = None):
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.7,
-            max_tokens=500
+            max_tokens=300  # Reduced from 500 for more concise responses
         )
         end = time.time()
         generation_time = end - start

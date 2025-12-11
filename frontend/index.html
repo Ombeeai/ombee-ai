@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ombee AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(40, 40, 40, 0.9) 100%);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(236, 199, 25, 0.3);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 0.5rem;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        h1 {
+            color: #ECC719;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            background: rgba(30, 30, 30, 0.5);
+        }
+
+        /* Custom scrollbar for messages */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(236, 199, 25, 0.3);
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 199, 25, 0.5);
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #ECC719 0%, #d4af15 100%);
+            color: #1a1a1a;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #ECC719 0%, #d4af15 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: rgba(100, 100, 100, 0.5);
+        }
+
+        .domain-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            background: rgba(236, 199, 25, 0.2);
+            color: #ECC719;
+        }
+
+        .sources {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border-left: 3px solid rgba(236, 199, 25, 0.5);
+        }
+
+        .sources-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ECC719;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .sources-toggle:hover {
+            color: #ffd700;
+        }
+
+        .sources-icon {
+            transition: transform 0.3s;
+        }
+
+        .sources-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .sources-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .sources-content.expanded {
+            max-height: 500px;
+            margin-top: 0.75rem;
+        }
+
+        .source-item {
+            padding: 0.5rem 0.75rem;
+            margin: 0.25rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #ccc;
+            display: flex;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .source-item::before {
+            content: "📄";
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 12px;
+            border: 2px solid rgba(236, 199, 25, 0.2);
+            flex-shrink: 0;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #messageInput:focus {
+            background: rgba(60, 60, 60, 0.9);
+        }
+
+        #sendButton {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ECC719 0%, #d4af15 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(236, 199, 25, 0.4);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 0.5rem 1rem;
+            color: #999;
+            font-style: italic;
+            flex-shrink: 0;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: inline-block;
+        }
+
+        .typing-dots span {
+            animation: blink 1.4s infinite;
+            display: inline-block;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .example-queries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .example-btn {
+            padding: 1rem;
+            background: rgba(50, 50, 50, 0.6);
+            border: 1px solid rgba(236, 199, 25, 0.3);
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .example-btn:hover {
+            background: rgba(60, 60, 60, 0.8);
+            border-color: rgba(236, 199, 25, 0.5);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 1rem;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .input-container {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="ombee_icon.png" alt="Ombee AI" onerror="this.parentElement.innerHTML='🐝'">
+        </div>
+        <h1>Ombee AI Assistant</h1>
+        <p class="subtitle">Your personal multi-domain AI companion</p>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <div class="welcome-message">
+                <h2>Welcome to Ombee AI! 👋</h2>
+                <p>I'm here to help with wellness, nutrition, and holistic health.</p>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">Try asking me something below or click an example:</p>
+                
+                <div class="example-queries">
+                    <button class="example-btn" onclick="sendExample('What are some meditation techniques for beginners?')">
+                        🧘 Meditation for beginners
+                    </button>
+                    <button class="example-btn" onclick="sendExample('What foods should I eat if I have high blood pressure?')">
+                        🥗 Foods for high blood pressure
+                    </button>
+                    <button class="example-btn" onclick="sendExample('How can I improve my sleep quality?')">
+                        💤 Improve sleep quality
+                    </button>
+                    <button class="example-btn" onclick="sendExample('How much did I spend on restaurants last month?')">
+                        💳 Restaurant spending (demo)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span class="typing-dots">
+                Ombee is thinking<span>.</span><span>.</span><span>.</span>
+            </span>
+        </div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="Ask about wellness, finances, or mobile services..."
+                onkeypress="handleKeyPress(event)"
+            >
+            <button id="sendButton" onclick="sendMessage()">Send 🐝</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000' 
+            : window.location.origin;
+
+        let sessionId = null;
+
+        // Initialize session on load
+        async function initSession() {
+            try {
+                const response = await fetch(`${API_URL}/api/sessions/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json();
+                sessionId = data.session_id;
+                console.log('Session created:', sessionId);
+            } catch (error) {
+                console.error('Failed to create session:', error);
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Clear input
+            input.value = '';
+            
+            // Hide welcome message
+            const welcomeMsg = document.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.style.display = 'none';
+
+            // Add user message
+            addMessage(message, 'user');
+
+            // Show typing indicator
+            document.getElementById('typingIndicator').classList.add('active');
+            document.getElementById('sendButton').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: sessionId
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Update session ID if new
+                if (!sessionId) sessionId = data.session_id;
+
+                // Add assistant response
+                addMessage(
+                    data.response, 
+                    'assistant', 
+                    data.domain, 
+                    data.confidence,
+                    data.sources,
+                    data.status
+                );
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage(
+                    'Sorry, I encountered an error. Please try again.',
+                    'assistant'
+                );
+            } finally {
+                // Hide typing indicator
+                document.getElementById('typingIndicator').classList.remove('active');
+                document.getElementById('sendButton').disabled = false;
+                input.focus();
+            }
+        }
+
+        // Add message to chat
+        function addMessage(content, role, domain = null, confidence = null, sources = null, status = null) {
+            const messagesDiv = document.getElementById('messages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            
+            if (role === 'user') {
+                avatar.innerHTML = '👤';
+                avatar.style.background = 'linear-gradient(135deg, #ECC719 0%, #d4af15 100%)';
+            } else {
+                // Try to load Ombee icon, fallback to emoji
+                avatar.innerHTML = '<img src="ombee_icon.png" alt="Ombee" onerror="this.parentElement.innerHTML=\'🐝\'; this.parentElement.style.background=\'rgba(100, 100, 100, 0.5)\'">';
+                avatar.style.background = 'transparent';
+            }
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // Format the text (basic markdown)
+            let formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+            
+            contentDiv.innerHTML = formattedContent;
+            
+            // Add domain badge for assistant messages
+            if (role === 'assistant' && domain) {
+                const badge = document.createElement('div');
+                badge.className = 'domain-badge';
+                const domainIcons = {
+                    'holistic': '💚',
+                    'financial': '💰',
+                    'telecom': '📱'
+                };
+                badge.textContent = `${domainIcons[domain] || '🔍'} ${domain.toUpperCase()} ${status === 'demo' ? '(Demo)' : ''}`;
+                contentDiv.appendChild(badge);
+            }
+            
+            // Add collapsible sources if available
+            if (sources && sources.length > 0) {
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.className = 'sources';
+                
+                const sourcesId = `sources-${Date.now()}`;
+                
+                sourcesDiv.innerHTML = `
+                    <div class="sources-toggle" onclick="toggleSources('${sourcesId}')">
+                        <span class="sources-icon" id="${sourcesId}-icon">▶</span>
+                        <span>View ${sources.length} source${sources.length > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="sources-content" id="${sourcesId}">
+                        ${sources.map(source => `<div class="source-item">${source}</div>`).join('')}
+                    </div>
+                `;
+                
+                contentDiv.appendChild(sourcesDiv);
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Toggle sources visibility
+        function toggleSources(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById(`${id}-icon`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                icon.classList.add('expanded');
+            }
+        }
+
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send example query
+        function sendExample(query) {
+            document.getElementById('messageInput').value = query;
+            sendMessage();
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initSession);
+    </script>
+</body>
+</html>

@@ -1,99 +1,144 @@
-DEMO_RESPONSES = {
-    "how much did i spend on restaurants last month?": {
-        "domain": "financial",
-        "response": """Based on your linked Ombee Finance account:
+"""
+Demo responses for specific queries in non-holistic domains.
+These are used to simulate responses from future AI agents (e.g., Finance, Telecom)
+"""
 
-    **October Restaurant Spending: $487.23**
+def get_demo_response(query: str, domain: str) -> dict | None:
+    """Return demo response if query matches demo patterns"""
+    query_lower = query.lower()
+    
+    # Financial domain demos
+    if domain == 'financial':
+        if 'restaurant' in query_lower and any(word in query_lower for word in ['spend', 'spent', 'cost']):
+            return {
+                'response': """Based on your Ombee Finance account, here's your restaurant spending for last month:
 
-    - 15 transactions
-    - Most frequent: Chipotle (4 visits, $52.60 total)
-    - Largest single purchase: Ruth's Chris ($142.50)
-    - Average per transaction: $32.48
+**Total Restaurant Spending: $487.32**
 
-    📊 This is 23% above your $400 monthly budget.
+Top locations:
+• Chipotle - $142.50 (6 visits)
+• Starbucks - $98.20 (14 visits)
+• Olive Garden - $87.40 (2 visits)
+• Local Café - $159.22 (8 visits)
 
-    💡 **Suggestion:** Reducing to 12 restaurant visits per month could save you ~$87/month. Would you like budget-friendly meal prep ideas that align with your health goals?
+This represents 18% of your monthly food budget. You're $87 over your dining out goal of $400/month.
 
-    *[Demo data - Ombee Finance integration coming in Phase 2]*""",
-            "sources": ["Ombee Finance - Demo Data"],
-            "status": "demo"
-        },
+💡 *Tip: Consider meal prepping 2-3 times per week to reduce dining costs.*
+
+*Note: This is demo data. Full Ombee Finance integration coming Q2 2026.*""",
+                'sources': ['Ombee Finance Demo Data'],
+                'status': 'demo'
+            }
         
-    "what's my current phone plan?": {
-        "domain": "telecom",
-        "response": """Based on your Ombee Wireless account:
+        elif 'budget' in query_lower or 'spending' in query_lower:
+            return {
+                'response': """Here's your Ombee Finance overview for this month:
 
-    **Current Plan: Max**
-    - Monthly base cost: $50.00
-    - Data: Ultra-Fast Unlimited 5G
-    - Talk & Text: Unlimited nationwide
-    - Hotspot: 30GB high-speed
-    - International: Talk & Text to Mexico/Canada included
+**Monthly Budget Status:**
+• Total Budget: $3,500
+• Spent So Far: $2,843 (81%)
+• Remaining: $657
 
-    **Device Payment: iPhone 14 Pro (256GB)**
-    - Remaining balance: $533.32
-    - Monthly payment: $33.33
-    - Payments remaining: 16 months
+**Top Categories:**
+• Housing: $1,200 (34%)
+• Food & Dining: $687 (20%)
+• Transportation: $423 (12%)
+• Entertainment: $312 (9%)
+• Utilities: $221 (6%)
 
-    **Total Monthly Bill: ~$97.43** (including taxes & fees)
+You're on track to stay within budget! 🎉
 
-    *[Demo data - Ombee Wireless integration coming in Phase 2]*""",
-            "sources": ["Ombee Wireless - Demo Data"],
-            "status": "demo"
-        },
+*Note: This is demo data. Full Ombee Finance integration coming Q2 2026.*""",
+                'sources': ['Ombee Finance Demo Data'],
+                'status': 'demo'
+            }
+    
+    # Telecom domain demos
+    elif domain == 'telecom':
+        if 'plan' in query_lower or 'phone plan' in query_lower:
+            return {
+                'response': """Your current Ombee Wireless plan:
+
+**Plan Details:**
+• Plan Name: Unlimited Plus
+• Monthly Cost: $65/month
+• Data: Unlimited 5G
+• Hotspot: 50GB
+• International: Free texting to 200+ countries
+
+**This Month's Usage:**
+• Data Used: 42.3 GB
+• Hotspot Used: 8.2 GB
+• Minutes: 847 min
+• Texts: 1,234 messages
+
+Your plan is working great for your usage! All within limits. ✅
+
+*Note: This is demo data. Full Ombee Wireless integration coming Q2 2026.*""",
+                'sources': ['Ombee Wireless Demo Data'],
+                'status': 'demo'
+            }
         
-    "what's my data usage this month?": {
-        "domain": "telecom",
-        "response": """I've identified your question about mobile data usage.
+        elif 'data' in query_lower and 'usage' in query_lower:
+            return {
+                'response': """Your Ombee Wireless data usage this month:
 
-    Our **Ombee Wireless AI agent** is being integrated and will provide:
-    - Real-time data usage tracking
-    - Usage alerts and recommendations
-    - Data optimization tips
-    - Plan upgrade suggestions if needed
+**Data Breakdown:**
+• Total Used: 42.3 GB
+• Unlimited plan - no overage charges! ✅
 
-    **Expected launch:** Phase 2 (Q2 2026)
+**Usage by App:**
+• Streaming (Netflix, YouTube): 18.4 GB
+• Social Media: 12.8 GB
+• Web Browsing: 7.2 GB
+• Maps & Navigation: 2.1 GB
+• Other: 1.8 GB
 
-    For now, I'm here to help with holistic wellness topics! Ask me about nutrition, meditation, exercise, or managing health conditions like high blood pressure.""",
-            "sources": [],
-            "status": "coming-soon"
-    }
-}
+**Trends:**
+You're using 15% more data than last month, mainly from video streaming.
 
-def get_demo_response(query: str, domain: str = None) -> dict:
-    """Check if query has a predefined demo response."""
-    query_lower = query.lower().strip()
-    return DEMO_RESPONSES.get(query_lower)
+*Note: This is demo data. Full Ombee Wireless integration coming Q2 2026.*""",
+                'sources': ['Ombee Wireless Demo Data'],
+                'status': 'demo'
+            }
+    
+    return None
 
 def get_coming_soon_message(domain: str, query: str) -> str:
-    """Generate coming soon message for non-demo queries in non-holistic domains."""
+    """Return coming soon message for domains in development"""
     
-    messages = {
-        'financial': f"""I can see you're asking about financial information: "{query}"
-
-        Our **Ombee Finance AI agent** is currently in development and will provide:
-        - Personal budget tracking and recommendations
-        - Spending pattern analysis and insights
-        - Bill payment optimization
-        - Savings goal tracking
-        - Integration with your Ombee Finance account
-
-        **Expected launch:** Phase 2 (Q2 2026)
-
-        In the meantime, I'm fully operational for holistic health and wellness questions! Try asking about nutrition, meditation, exercise, sleep, stress management, or managing chronic health conditions.""",
-                
-                'telecom': f"""I've identified your question about mobile/telecom: "{query}"
-
-        Our **Ombee Wireless AI agent** is being integrated and will offer:
-        - Ombee Wireless account insights
-        - Bill analysis and payment assistance
-        - Data usage monitoring and optimization
-        - Plan recommendations and upgrades
-        - Network troubleshooting support
-
-        **Expected launch:** Phase 2 (Q2 2026)
-
-        For now, I'm here to help with holistic wellness topics! Ask me about healthy eating, stress management, sleep optimization, exercise guidance, or nutrition for specific health conditions."""
+    domain_info = {
+        'financial': {
+            'name': 'Ombee Finance',
+            'icon': '💰',
+            'features': 'budget tracking, spending analysis, and financial insights'
+        },
+        'telecom': {
+            'name': 'Ombee Wireless',
+            'icon': '📱',
+            'features': 'plan management, usage tracking, and billing information'
+        }
     }
     
-    return messages.get(domain, "This feature is coming soon! For now, I can help with holistic health and wellness questions.")
+    info = domain_info.get(domain, {
+        'name': domain.title(),
+        'icon': '🔄',
+        'features': 'specialized services'
+    })
+    
+    return f"""{info['icon']} **{info['name']} - Coming Soon!**
+
+Great question about {domain} services! This feature is currently in active development as part of Ombee AI Phase 2.
+
+**What's Coming:**
+{info['name']} will provide {info['features']}, all integrated with your personalized AI assistant.
+
+**Current Status:**
+The Holistic Health domain is live and ready to help with wellness, nutrition, and health questions!
+
+**Launch Timeline:**
+{info['name']} is planned for Q2 2026.
+
+In the meantime, feel free to ask me anything about holistic health, nutrition, meditation, sleep, or wellness! 🧘‍♀️
+
+*Stay tuned for updates on {info['name']}!*"""
