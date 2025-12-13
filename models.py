@@ -1,8 +1,8 @@
 """
 Database models with patent-ready architecture
-Includes placeholder fields for future UID implementation
+Patent-ready architecture with UID placeholders
 """
-from sqlalchemy import Column, String, Integer, Float, DateTime, JSON, Text, ForeignKey, Boolean
+from sqlalchemy import Column, String, DateTime, Float, Text, Boolean, JSON, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -12,14 +12,14 @@ import hashlib
 Base = declarative_base()
 
 class User(Base):
-    """User table - ready for patent authentication"""
-    __tablename__ = "users"
+    """User accounts """
+    __tablename__ = "user_profiles"
     
     user_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    persistent_uid = Column(String, nullable=True)  # PATENT: Will store persistent UID
+    persistent_uid = Column(String, unique=True, nullable=True)  # PATENT: Cryptographic UID placeholder
     email = Column(String, unique=True, nullable=True)
-    name = Column(String)
-    preferences = Column(JSON, default=dict)
+    name = Column(String, nullable=True)
+    preferences = Column(JSON, default=dict)  # User preferences (diet, health goals, etc.)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -27,12 +27,13 @@ class User(Base):
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
 
 class Session(Base):
-    """Chat session table"""
+    """Chat sessions with conversation history"""
     __tablename__ = "sessions"
     
     session_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    session_uid = Column(String, nullable=True)  # PATENT: Will store session UID
-    user_id = Column(String, ForeignKey('users.user_id'), nullable=True)
+    session_uid = Column(String, unique=True, nullable=True)  # PATENT: Placeholder for cryptographic session UID
+    user_id = Column(String, ForeignKey("user_profiles.user_id"), nullable=True)  # NULL = anonymous session
+    title = Column(String, nullable=True)  # Chat title (auto-generated from first message)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -41,26 +42,24 @@ class Session(Base):
     messages = relationship("Message", back_populates="session", cascade="all, delete-orphan")
 
 class Message(Base):
-    """Message table with patent-ready provenance fields"""
+    """Individual messages in conversations"""
     __tablename__ = "messages"
     
     message_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    message_uid = Column(String, nullable=True)  # PATENT: Will store cryptographic UID
-    session_id = Column(String, ForeignKey('sessions.session_id'), nullable=False)
+    message_uid = Column(String, unique=True, nullable=True)  # PATENT: Placeholder for cryptographic message UID
+    session_id = Column(String, ForeignKey("sessions.session_id"), nullable=False)
     role = Column(String, nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
-    content_hash = Column(String)  # SHA-256 hash of content (patent provenance)
+    content_hash = Column(String, nullable=True)  # SHA-256 hash of content (PATENT: tamper detection)
     timestamp = Column(DateTime, default=datetime.utcnow)
     
-    # PATENT: Source tracking fields
-    source_document_uids = Column(JSON, nullable=True)  # Array of source UIDs
+    # RAG metadata
+    message_metadata = Column(JSON, default=dict)  # Store domain, confidence, sources, status
+    retrieval_time = Column(Float, nullable=True)  # Seconds
+    generation_time = Column(Float, nullable=True)  # Seconds
     
-    # Message metadata for patent features (renamed to avoid SQLAlchemy conflict)
-    message_metadata = Column(JSON, default=dict)  # Stores domain, confidence, sources, etc.
-    
-    # Performance metrics (patent: reasoning authentication)
-    retrieval_time = Column(Float, nullable=True)  # seconds
-    generation_time = Column(Float, nullable=True)  # seconds
+    # PATENT: Source document tracking
+    source_document_uids = Column(JSON, default=list)  # List of UIDs for documents used
     
     # Relationships
     session = relationship("Session", back_populates="messages")
@@ -68,42 +67,38 @@ class Message(Base):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Auto-generate content hash on creation
-        if self.content:
-            self.content_hash = hashlib.sha256(self.content.encode()).hexdigest()
+        if self.content and not self.content_hash:
+            self.content_hash = self._generate_content_hash(self.content)
+    
+    @staticmethod
+    def _generate_content_hash(content: str) -> str:
+        """Generate SHA-256 hash of content"""
+        return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
 class AuditLog(Base):
-    """Audit log for patent compliance - tracks all AI interactions"""
+    """Audit trail for all system actions (PATENT: provenance tracking)"""
     __tablename__ = "audit_logs"
     
     log_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    entity_uid = Column(String, nullable=True)  # PATENT: UID of the entity being logged
-    action_type = Column(String)  # 'query', 'response', 'retrieval', etc.
+    entity_uid = Column(String, nullable=True)  # PATENT: UID of entity being acted upon
+    action_type = Column(String, nullable=False)  # 'create', 'read', 'update', 'delete', 'query', etc.
     timestamp = Column(DateTime, default=datetime.utcnow)
-    actor_id = Column(String, nullable=True)  # user_id or agent_id
-    
-    # PATENT: Detailed logging
-    details = Column(JSON, default=dict)  # Stores full context of action
-    
-    # PATENT: Trust and verification
-    trust_score = Column(Float, nullable=True)
-    verified = Column(Boolean, default=False)
+    actor_id = Column(String, nullable=True)  # User or AI agent that performed action
+    details = Column(JSON, default=dict)  # Additional context
+    trust_score = Column(Float, nullable=True)  # PATENT: Trust/reputation score
+    verified = Column(Boolean, default=False)  # PATENT: Cryptographic verification status
 
 class AIAgent(Base):
-    """AI Agent table - for patent SubUID implementation"""
+    """AI Agent tracking (PATENT: SubUID system for agent hierarchy)"""
     __tablename__ = "ai_agents"
     
     agent_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    agent_uid = Column(String, nullable=True)  # PATENT: Agent SubUID
-    agent_name = Column(String)
-    agent_type = Column(String)  # 'rag', 'router', 'retriever', etc.
-    parent_user_id = Column(String, ForeignKey('users.user_id'), nullable=True)
-    
-    # PATENT: Permission and scope
-    permission_scopes = Column(JSON, default=list)
+    agent_uid = Column(String, unique=True, nullable=True)  # PATENT: Cryptographic SubUID
+    agent_name = Column(String, nullable=False)  # e.g., "Holistic Health Agent", "Finance Agent"
+    agent_type = Column(String, nullable=False)  # e.g., "rag", "reasoning", "tool_use"
+    parent_user_id = Column(String, ForeignKey("user_profiles.user_id"), nullable=True)
+    permission_scopes = Column(JSON, default=list)  # What the agent can access
     is_active = Column(Boolean, default=True)
-    
-    # PATENT: Behavioral attestation
-    behavior_signature = Column(String, nullable=True)
-    
+    behavior_signature = Column(String, nullable=True)  # PATENT: Hash of agent's behavior/prompts
     created_at = Column(DateTime, default=datetime.utcnow)
     revoked_at = Column(DateTime, nullable=True)

@@ -16,7 +16,7 @@ def get_env(key: str, default=None, required=False):
     return value
 
 # === Database Configuration ===
-DATABASE_URL = get_env("DATABASE_URL", "sqlite:///./ombee.db")
+DATABASE_URL = get_env("DATABASE_URL")
 
 # === Vector Database (Pinecone) Configuration ===
 PINECONE_API_KEY = get_env("PINECONE_API_KEY",required=True)

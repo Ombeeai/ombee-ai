@@ -4,12 +4,10 @@ Production-ready with patent architecture foundations
 """
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os
 from datetime import datetime
-import json
 
 # Import database models and operations
 from database import SessionLocal, engine, get_db
@@ -42,7 +40,7 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000", 
         "https://ombee-frontend.onrender.com"
-        ], 
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -71,10 +69,21 @@ class ChatResponse(BaseModel):
 
 class SessionCreate(BaseModel):
     user_id: Optional[str] = None
+    title: Optional[str] = None
 
 class SessionResponse(BaseModel):
     session_id: str
     created_at: str
+    updated_at: Optional[str] = None
+    title: Optional[str] = None
+
+class SessionListItem(BaseModel):
+    session_id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int
+    preview: Optional[str] = None
 
 class MessageHistory(BaseModel):
     message_id: str
@@ -83,6 +92,29 @@ class MessageHistory(BaseModel):
     timestamp: str
     domain: Optional[str] = None
     sources: Optional[List[str]] = None
+
+class UserProfile(BaseModel):
+    user_id: str
+    name: str
+    email: Optional[str] = None
+    preferences: dict
+    created_at: str
+
+class UserCreate(BaseModel):
+    user_id: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    preferences: Optional[dict] = None
+
+class UserPreferencesUpdate(BaseModel):
+    preferences: dict
+
+class UserStats(BaseModel):
+    total_sessions: int
+    total_messages: int
+    total_queries: int
+    domains_used: dict
+    avg_response_time: Optional[float] = None
 
 # === API Endpoints ===
 
@@ -103,14 +135,46 @@ async def create_session(
 ):
     """Create a new chat session"""
     try:
-        session = crud.create_session(db, session_data.user_id)
+        session = crud.create_session(db, session_data.user_id, session_data.title)
         
         return SessionResponse(
             session_id=session.session_id,
-            created_at=session.created_at.isoformat()
+            created_at=session.created_at.isoformat(),
+            updated_at=session.updated_at.isoformat() if session.updated_at else None,
+            title=session.title
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
+
+@app.get("/api/sessions/list", response_model=List[SessionListItem])
+async def list_sessions(
+    user_id: Optional[str] = None,
+    limit: int = 50,
+    db = Depends(get_db)
+):
+    """List all sessions for a user"""
+    try:
+        sessions = crud.get_user_sessions(db, user_id, limit)
+        
+        result = []
+        for session in sessions:
+            # Get message count and preview
+            messages = crud.get_session_messages(db, session.session_id, limit=1)
+            message_count = len(crud.get_session_messages(db, session.session_id, limit=1000))
+            preview = messages[0].content[:100] if messages else "New conversation"
+            
+            result.append(SessionListItem(
+                session_id=session.session_id,
+                title=session.title or preview,
+                created_at=session.created_at.isoformat(),
+                updated_at=session.updated_at.isoformat(),
+                message_count=message_count,
+                preview=preview
+            ))
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list sessions: {str(e)}")
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(
@@ -137,11 +201,18 @@ async def chat(
             content=request.message
         )
         
-        # Get conversation history for context (last 5 messages)
+        # Auto-generate session title from first user message
+        if not session.title:
+            session.title = request.message[:50] + ("..." if len(request.message) > 50 else "")
+            db.commit()
+        
+        user = crud.get_user(db, request.user_id)
+        user_context = user.preferences if user else None
+
+        # Get conversation history for context
         history = crud.get_session_messages(db, session.session_id, limit=10)
         conversation_context = ""
-        if len(history) > 1:  # More than just the current message
-            # Format last few exchanges for context
+        if len(history) > 1:
             recent_messages = history[-6:-1] if len(history) > 6 else history[:-1]
             conversation_context = "\n".join([
                 f"{'User' if msg.role == 'user' else 'Assistant'}: {msg.content[:200]}" 
@@ -180,12 +251,10 @@ async def chat(
                     context = f"Previous conversation:\n{conversation_context}\n\n---\n\nRelevant documents:\n{context}"
                 
                 # Generate response
-                user_context = None  # TODO: Implement user context from DB
                 response_text, generation_time, cumulative_tokens, cumulative_cost = generate_response(
                     request.message,
                     context,
-                    user_context=user_context,
-                    conversation_history=conversation_context
+                    user_context=user_context
                 )
                 status = 'live'
             except Exception as e:
@@ -273,8 +342,8 @@ async def get_messages(
                 role=msg.role,
                 content=msg.content,
                 timestamp=msg.timestamp.isoformat(),
-                domain=msg.metadata.get('domain') if msg.metadata else None,
-                sources=msg.metadata.get('sources') if msg.metadata else None
+                domain=msg.message_metadata.get('domain') if msg.message_metadata else None,
+                sources=msg.message_metadata.get('sources') if msg.message_metadata else None
             )
             for msg in messages
         ]
@@ -300,6 +369,91 @@ async def delete_session(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete session: {str(e)}")
 
+# === User Endpoints ===
+
+@app.post("/api/users/create")
+async def create_user(
+    user_data: UserCreate,
+    db = Depends(get_db)
+):
+    """Create a new user"""
+    try:
+        # Check if user already exists
+        existing_user = crud.get_user(db, user_data.user_id)
+        if existing_user:
+            return {"status": "exists", "user_id": existing_user.user_id}
+        
+        # Create new user with provided user_id
+        user = crud.create_user(
+            db,
+            user_id=user_data.user_id,
+            email=user_data.email,
+            name=user_data.name or "User",
+            preferences=user_data.preferences or {}
+        )
+        return {"status": "success", "user_id": user.user_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create user: {str(e)}")
+
+@app.get("/api/users/{user_id}", response_model=UserProfile)
+async def get_user_profile(
+    user_id: str,
+    db = Depends(get_db)
+):
+    """Get user profile"""
+    try:
+        user = crud.get_user(db, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return UserProfile(
+            user_id=user.user_id,
+            name=user.name,
+            email=user.email,
+            preferences=user.preferences,
+            created_at=user.created_at.isoformat()
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get user: {str(e)}")
+
+@app.put("/api/users/{user_id}/preferences")
+async def update_user_preferences(
+    user_id: str,
+    prefs: UserPreferencesUpdate,
+    db = Depends(get_db)
+):
+    """Update user preferences"""
+    try:
+        print(f"DEBUG: Updating preferences for user {user_id}") 
+        print(f"DEBUG: Preferences data: {prefs.preferences}") 
+
+        user = crud.update_user_preferences(db, user_id, prefs.preferences)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        print(f"DEBUG: User preferences after update: {user.preferences}")
+
+        return {"status": "success", "preferences": user.preferences}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"DEBUG: Error updating preferences: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update preferences: {str(e)}")
+
+@app.get("/api/stats/{user_id}", response_model=UserStats)
+async def get_user_stats(
+    user_id: str,
+    db = Depends(get_db)
+):
+    """Get user statistics"""
+    try:
+        stats = crud.get_user_stats(db, user_id)
+        return UserStats(**stats)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get stats: {str(e)}")
+
 @app.get("/api/health")
 async def health_check():
     """Detailed health check"""
@@ -315,6 +469,16 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.get("/test-db")
+def test_database():
+    """Test database connection"""
+    try:
+        from database import engine
+        with engine.connect() as conn:
+            result = conn.execute("SELECT 1")
+            return {"status": "connected", "test": "success"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

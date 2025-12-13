@@ -60,8 +60,8 @@ You're on track to stay within budget!
                 'response': """Your current Ombee Wireless plan:
 
 **Plan Details:**
-• Plan Name: Unlimited Plus
-• Monthly Cost: $65/month
+• Plan Name: Max
+• Monthly Cost: $50/month
 • Data: Unlimited 5G
 • Hotspot: 50GB
 • International: Free texting to 200+ countries
